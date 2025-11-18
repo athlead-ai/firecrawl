@@ -5,6 +5,7 @@ import { type ScrapeJobData } from "../../types";
 import { withSpan, setSpanAttributes } from "../../lib/otel-tracer";
 import amqp from "amqplib";
 import { v5 as uuidv5, validate as isUUID } from "uuid";
+import crypto from "crypto";
 
 // === Basics
 
