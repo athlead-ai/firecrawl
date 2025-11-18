@@ -24,21 +24,17 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy workspace files
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/playwright-service-ts/package.json ./apps/playwright-service-ts/
+# Copy Playwright service
+COPY apps/playwright-service-ts ./apps/playwright-service-ts
 
 # Install dependencies
+WORKDIR /app/apps/playwright-service-ts
 RUN pnpm install --frozen-lockfile
 
 # Install Playwright browsers
 RUN npx playwright install chromium
 
-# Copy Playwright service source
-COPY apps/playwright-service-ts ./apps/playwright-service-ts
-
 # Build TypeScript
-WORKDIR /app/apps/playwright-service-ts
 RUN pnpm build
 
 EXPOSE 3000

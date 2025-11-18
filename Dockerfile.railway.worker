@@ -24,22 +24,17 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# Copy workspace files
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/rust-sdk ./apps/rust-sdk
+# Copy API app
+COPY apps/api ./apps/api
 
 # Install dependencies
+WORKDIR /app/apps/api
 RUN pnpm install --frozen-lockfile
 
 # Install Playwright browsers
 RUN npx playwright install chromium
 
-# Copy API source
-COPY apps/api ./apps/api
-
 # Build TypeScript
-WORKDIR /app/apps/api
 RUN pnpm build
 
 # Start workers
