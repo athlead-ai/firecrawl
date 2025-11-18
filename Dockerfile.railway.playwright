@@ -1,6 +1,6 @@
 FROM node:18-slim
 
-# Install Playwright dependencies
+# Install Playwright dependencies + build tools
 RUN apt-get update && apt-get install -y \
     fonts-liberation \
     libasound2 \
@@ -17,7 +17,15 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
+    python3 \
+    make \
+    g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Install pnpm
 RUN npm install -g pnpm@9
