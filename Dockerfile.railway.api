@@ -1,0 +1,27 @@
+FROM node:18-slim
+
+# Install pnpm
+RUN npm install -g pnpm@9
+
+WORKDIR /app
+
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/rust-sdk ./apps/rust-sdk
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy API source
+COPY apps/api ./apps/api
+
+# Build TypeScript
+WORKDIR /app/apps/api
+RUN pnpm build
+
+# Expose port
+EXPOSE 3002
+
+# Start API server
+CMD ["node", "dist/src/index.js"]
