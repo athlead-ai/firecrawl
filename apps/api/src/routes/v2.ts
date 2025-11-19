@@ -2,7 +2,7 @@ import express from "express";
 import { RateLimiterMode } from "../types";
 import expressWs from "express-ws";
 import { searchController } from "../controllers/v2/search";
-import { x402SearchController } from "../controllers/v2/x402-search";
+// import { x402SearchController } from "../controllers/v2/x402-search"; // Disabled for self-hosted
 import { scrapeController } from "../controllers/v2/scrape";
 import { batchScrapeController } from "../controllers/v2/batch-scrape";
 import { crawlController } from "../controllers/v2/crawl";
@@ -31,8 +31,8 @@ import {
 import { queueStatusController } from "../controllers/v2/queue-status";
 import { creditUsageHistoricalController } from "../controllers/v2/credit-usage-historical";
 import { tokenUsageHistoricalController } from "../controllers/v2/token-usage-historical";
-import { paymentMiddleware } from "x402-express";
-import { facilitator } from "@coinbase/x402";
+// import { paymentMiddleware } from "x402-express"; // Disabled for self-hosted
+// import { facilitator } from "@coinbase/x402"; // Disabled for self-hosted
 
 expressWs(express());
 
@@ -44,6 +44,8 @@ v2Router.use(requestTimingMiddleware("v2"));
 // Configure payment middleware to enable micropayment-protected endpoints
 // This middleware handles payment verification and processing for premium API features
 // x402 payments protocol - https://github.com/coinbase/x402
+// DISABLED FOR SELF-HOSTED DEPLOYMENT (x402 ESM dependency issues)
+/*
 v2Router.use(
   paymentMiddleware(
     (process.env.X402_PAY_TO_ADDRESS as `0x${string}`) ||
@@ -155,6 +157,7 @@ v2Router.use(
     facilitator,
   ),
 );
+*/
 
 v2Router.post(
   "/search",
@@ -309,6 +312,8 @@ v2Router.get(
   wrap(queueStatusController),
 );
 
+// Disabled for self-hosted (x402 ESM dependency issues)
+/*
 v2Router.post(
   "/x402/search",
   authMiddleware(RateLimiterMode.Search),
@@ -316,3 +321,4 @@ v2Router.post(
   blocklistMiddleware,
   wrap(x402SearchController),
 );
+*/

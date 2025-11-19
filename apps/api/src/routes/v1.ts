@@ -16,7 +16,7 @@ import { extractController } from "../controllers/v1/extract";
 import { extractStatusController } from "../controllers/v1/extract-status";
 import { creditUsageController } from "../controllers/v1/credit-usage";
 import { searchController } from "../controllers/v1/search";
-import { x402SearchController } from "../controllers/v1/x402-search";
+// import { x402SearchController } from "../controllers/v1/x402-search"; // Disabled for self-hosted
 import { crawlErrorsController } from "../controllers/v1/crawl-errors";
 import { generateLLMsTextController } from "../controllers/v1/generate-llmstxt";
 import { generateLLMsTextStatusController } from "../controllers/v1/generate-llmstxt-status";
@@ -33,11 +33,11 @@ import {
   requestTimingMiddleware,
   wrap,
 } from "./shared";
-import { paymentMiddleware } from "x402-express";
+// import { paymentMiddleware } from "x402-express"; // Disabled for self-hosted
 import { queueStatusController } from "../controllers/v1/queue-status";
 import { creditUsageHistoricalController } from "../controllers/v1/credit-usage-historical";
 import { tokenUsageHistoricalController } from "../controllers/v1/token-usage-historical";
-import { facilitator } from "@coinbase/x402";
+// import { facilitator } from "@coinbase/x402"; // Disabled for self-hosted
 
 expressWs(express());
 
@@ -49,6 +49,8 @@ v1Router.use(requestTimingMiddleware("v1"));
 // Configure payment middleware to enable micropayment-protected endpoints
 // This middleware handles payment verification and processing for premium API features
 // x402 payments protocol - https://github.com/coinbase/x402
+// DISABLED FOR SELF-HOSTED DEPLOYMENT (x402 ESM dependency issues)
+/*
 v1Router.use(
   paymentMiddleware(
     (process.env.X402_PAY_TO_ADDRESS as `0x${string}`) ||
@@ -111,6 +113,7 @@ v1Router.use(
     facilitator,
   ),
 );
+*/
 
 v1Router.post(
   "/scrape",
@@ -306,9 +309,12 @@ v1Router.get(
   wrap(queueStatusController),
 );
 
+// Disabled for self-hosted (x402 ESM dependency issues)
+/*
 v1Router.post(
   "/x402/search",
   authMiddleware(RateLimiterMode.Search),
   countryCheck,
   wrap(x402SearchController),
 );
+*/
