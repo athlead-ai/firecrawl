@@ -93,6 +93,10 @@ app.get("/", (req, res) => {
   res.send("SCRAPERS-JS: Hello, world! K8s!");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 //write a simple test function
 app.get("/test", async (req, res) => {
   res.send("Hello, world!");
