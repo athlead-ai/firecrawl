@@ -1,6 +1,44 @@
-FROM node:18-slim
+# Stage 1: Builder
+FROM node:18-slim AS builder
 
-# Install Playwright dependencies + build tools
+# Install build tools
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust (needed for firecrawl-rs)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install pnpm
+RUN npm install -g pnpm@9
+
+WORKDIR /app
+
+# Copy API app source
+COPY apps/api ./apps/api
+
+WORKDIR /app/apps/api
+
+# Install all dependencies (including dev for building)
+RUN pnpm install --frozen-lockfile
+
+# Build TypeScript
+RUN pnpm build
+
+# Prune to production dependencies
+RUN pnpm prune --prod
+
+# Remove Rust build artifacts to save space (keep only the binary)
+RUN rm -rf native/target
+
+# Stage 2: Runner
+FROM node:18-slim AS runner
+
+# Install Playwright dependencies
 RUN apt-get update && apt-get install -y \
     fonts-liberation \
     libasound2 \
@@ -17,33 +55,21 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
-    python3 \
-    make \
-    g++ \
-    curl \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Install pnpm
 RUN npm install -g pnpm@9
 
-WORKDIR /app
-
-# Copy API app
-COPY apps/api ./apps/api
-
-# Install dependencies
 WORKDIR /app/apps/api
-RUN pnpm install --frozen-lockfile
 
-# Install Playwright browsers
+# Copy artifacts from builder
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/node_modules ./node_modules
+COPY --from=builder /app/apps/api/native ./native
+COPY --from=builder /app/apps/api/package.json ./package.json
+
+# Install Playwright browsers (Chromium only)
 RUN npx playwright install chromium
 
-# Build TypeScript
-RUN pnpm build
-
 # Start workers
-CMD ["node", "dist/src/services/queue-worker.js"]
+CMD ["pnpm", "run", "worker:production"]
